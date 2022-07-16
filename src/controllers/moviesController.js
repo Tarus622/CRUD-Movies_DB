@@ -62,7 +62,17 @@ const moviesController = {
         db.Movie.create(req.body)
         .then(res.redirect('/movies'))
     },
-    edit: function(req,res) {
+    'edit': async function(req,res) {
+        let movie = await db.Movie.findByPk(req.params.id)
+        let genres = await db.Genre.findAll()
+
+        Promise.all([movie, genres])
+        .then(function([Movie, genreResult]) {
+            genreResult.forEach(genre => {
+                console.log(genre.id)
+            });
+            res.render('moviesEdit.ejs', {Movie, genreResult})
+        })
 
     },
     update: function (req,res) {
