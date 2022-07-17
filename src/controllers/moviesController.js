@@ -21,9 +21,10 @@ const moviesController = {
             })
     },
     'detail': (req, res) => {
+        let params = req.params.id
         db.Movie.findByPk(req.params.id)
             .then(movie => {
-                res.render('moviesDetail.ejs', {movie});
+                res.render('moviesDetail.ejs', {movie, params});
             });
     },
     'new': (req, res) => {
@@ -65,24 +66,40 @@ const moviesController = {
     'edit': async function(req,res) {
         let movie = await db.Movie.findByPk(req.params.id)
         let genres = await db.Genre.findAll()
+        let params = req.params.id
 
         Promise.all([movie, genres])
         .then(function([Movie, genreResult]) {
-            genreResult.forEach(genre => {
-                console.log(genre.id)
-            });
             res.render('moviesEdit.ejs', {Movie, genreResult})
         })
 
     },
-    update: function (req,res) {
-
+    'update': function (req,res) {
+        db.Movie.update(
+            {
+                title: req.body.title,
+                rating: req.body.rating,
+                awards: req.body.awards,
+                release_date: req.body.release_date,
+                length: req.body.length,
+                genre_id: req.body.genre_id
+            },
+            {
+                where: {id: req.params.id}
+            }
+        )
+        .then(res.redirect('/movies'))
     },
-    delete: function (req,res) {
-
+    'delete': async function (req,res) {
+        await db.Movie.findByPk(req.params.id)
+        .then(Movie => res.render('moviesDelete.ejs', {Movie}))
     },
-    destroy: function (req,res) {
-
+    'destroy': async function (req,res) {
+        await db.Movie.findByPk(req.params.id)
+            .then(db.Movie.destroy({
+                where: {id: req.params.id}
+            }))
+            .then(res.redirect('/movies'))
     }
 }
 
